@@ -1,40 +1,36 @@
 version: '3.8'
 
 services:
-   frontend:
-     build:
-       context: ./surfsense_web  # Build locally instead of using pre-built image
-       args:
-         - NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE=${NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE}
-     ports:
-       - "${FRONTEND_PORT:-3000}:3000"  # Bind to all interfaces for Tailscale
-     env_file:
-       - ./surfsense_web/.env
-     depends_on:
-       - backend
-     environment:
-       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
-       - HOSTNAME=0.0.0.0  # Bind to all interfaces for Tailscale
-    # Removed volume mounts for production build
-
-  backend:
-    build: ./surfsense_backend  # Build locally instead of using pre-built image
+  frontend:
+    build:
+      context: ./surfsense_web
+      args:
+        NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE: ${NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE}
     ports:
-      - "${BACKEND_PORT:-8000}:8000"  # Bind to all interfaces for Tailscale
+      - "${FRONTEND_PORT:-3000}:3000"
+    env_file:
+      - ./surfsense_web/.env
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
+      - HOSTNAME=0.0.0.0
+  backend:
+    build: ./surfsense_backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       - db
     env_file:
       - ./surfsense_backend/.env
     environment:
-      # Production settings from manual installation
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
       - PYTHONPATH=/app
       - UVICORN_LOOP=asyncio
-      - UVICORN_HOST=0.0.0.0  # Bind to all interfaces for Tailscale
+      - UVICORN_HOST=0.0.0.0
       - UVICORN_WORKERS=${UVICORN_WORKERS:-2}
       - UVICORN_LOG_LEVEL=${UVICORN_LOG_LEVEL:-info}
       - UVICORN_ACCESS_LOG=${UVICORN_ACCESS_LOG:-true}
       - UNSTRUCTURED_HAS_PATCHED_LOOP=1
       - LANGCHAIN_TRACING_V2=false
       - LANGSMITH_TRACING=false
-    # Removed volume mounts for production build
