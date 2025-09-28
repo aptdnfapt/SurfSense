@@ -58,7 +58,7 @@ export default function RegisterPage() {
 					password,
 					is_active: true,
 					is_superuser: false,
-					is_verified: false,
+					is_verified: true,
 				}),
 			});
 
