@@ -69,4 +69,4 @@ ENV UVICORN_LOOP=asyncio
 
 # Run
 EXPOSE 8000
-CMD ["python", "main.py", "--reload"] 
+CMD ["python", "main.py"] 

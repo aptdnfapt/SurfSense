@@ -24,6 +24,37 @@ services:
     depends_on:
       - db
 
+  frontend:
+    build:
+      context: ./surfsense_web
+      dockerfile: Dockerfile
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    env_file:
+      - ./surfsense_web/.env
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
+
+  backend:
+    build:
+      context: ./surfsense_backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      - db
+    env_file:
+      - ./surfsense_backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
+      - PYTHONPATH=/app
+      - UVICORN_LOOP=asyncio
+      - UNSTRUCTURED_HAS_PATCHED_LOOP=1
+      - LANGCHAIN_TRACING_V2=false
+      - LANGSMITH_TRACING=false
+
 volumes:
   postgres_data:
   pgadmin_data: 
