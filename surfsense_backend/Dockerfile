@@ -63,10 +63,13 @@ RUN pip install playwright && \
 # Copy source code
 COPY . .
 
-# Prevent uvloop compatibility issues
+# Production settings (based on manual installation)
 ENV PYTHONPATH=/app
 ENV UVICORN_LOOP=asyncio
+ENV UVICORN_WORKERS=2
+ENV UVICORN_LOG_LEVEL=info
+ENV UVICORN_ACCESS_LOG=true
 
-# Run
+# Run in production mode (no reload, like manual installation)
 EXPOSE 8000
-CMD ["python", "main.py", "--reload"] 
+CMD ["python", "main.py"] 

@@ -2,33 +2,36 @@ version: '3.8'
 
 services:
   frontend:
-    image: ghcr.io/modsetter/surfsense_ui:latest
+    build: ./surfsense_web  # Build locally instead of using pre-built image
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    volumes:
-      - ./surfsense_web:/app
-      - /app/node_modules
+      - "${FRONTEND_PORT:-3000}:3000"  # Bind to all interfaces for Tailscale
     env_file:
       - ./surfsense_web/.env
     depends_on:
       - backend
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
+      - HOSTNAME=0.0.0.0  # Bind to all interfaces for Tailscale
+    # Removed volume mounts for production build
 
   backend:
-    image: ghcr.io/modsetter/surfsense_backend:latest
+    build: ./surfsense_backend  # Build locally instead of using pre-built image
     ports:
-      - "${BACKEND_PORT:-8000}:8000"
-    volumes:
-      - ./surfsense_backend:/app
+      - "${BACKEND_PORT:-8000}:8000"  # Bind to all interfaces for Tailscale
     depends_on:
       - db
     env_file:
       - ./surfsense_backend/.env
     environment:
+      # Production settings from manual installation
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
       - PYTHONPATH=/app
       - UVICORN_LOOP=asyncio
+      - UVICORN_HOST=0.0.0.0  # Bind to all interfaces for Tailscale
+      - UVICORN_WORKERS=${UVICORN_WORKERS:-2}
+      - UVICORN_LOG_LEVEL=${UVICORN_LOG_LEVEL:-info}
+      - UVICORN_ACCESS_LOG=${UVICORN_ACCESS_LOG:-true}
       - UNSTRUCTURED_HAS_PATCHED_LOOP=1
       - LANGCHAIN_TRACING_V2=false
       - LANGSMITH_TRACING=false
+    # Removed volume mounts for production build
