@@ -1,17 +1,20 @@
 version: '3.8'
 
 services:
-  frontend:
-    build: ./surfsense_web  # Build locally instead of using pre-built image
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"  # Bind to all interfaces for Tailscale
-    env_file:
-      - ./surfsense_web/.env
-    depends_on:
-      - backend
-    environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
-      - HOSTNAME=0.0.0.0  # Bind to all interfaces for Tailscale
+   frontend:
+     build:
+       context: ./surfsense_web  # Build locally instead of using pre-built image
+       args:
+         - NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE=${NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE}
+     ports:
+       - "${FRONTEND_PORT:-3000}:3000"  # Bind to all interfaces for Tailscale
+     env_file:
+       - ./surfsense_web/.env
+     depends_on:
+       - backend
+     environment:
+       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
+       - HOSTNAME=0.0.0.0  # Bind to all interfaces for Tailscale
     # Removed volume mounts for production build
 
   backend:

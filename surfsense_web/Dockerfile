@@ -5,6 +5,10 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm
 
+# Set build arg for auth type
+ARG NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE
+ENV NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE=$NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE
+
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
