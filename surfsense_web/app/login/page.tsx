@@ -2,20 +2,22 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { getAuthErrorDetails, shouldRetry } from "@/lib/auth-errors";
+import { fetchAuthMode, type AuthMode } from "@/lib/auth-config";
 import { AmbientBackground } from "./AmbientBackground";
 import { GoogleLoginButton } from "./GoogleLoginButton";
 import { LocalLoginForm } from "./LocalLoginForm";
 
 function LoginContent() {
-	const [authType, setAuthType] = useState<string | null>(null);
+	const [authType, setAuthType] = useState<AuthMode>("GOOGLE");
 	const [isLoading, setIsLoading] = useState(true);
 	const [urlError, setUrlError] = useState<{ title: string; message: string } | null>(null);
 	const searchParams = useSearchParams();
+	const router = useRouter();
 
 	useEffect(() => {
 		// Check for various URL parameters that might indicate success or error states
@@ -79,9 +81,10 @@ function LoginContent() {
 			});
 		}
 
-		// Get the auth type from environment variables
-		setAuthType(process.env.NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE || "GOOGLE");
-		setIsLoading(false);
+		fetchAuthMode()
+			.then((mode) => setAuthType(mode))
+			.catch(() => setAuthType("GOOGLE"))
+			.finally(() => setIsLoading(false));
 	}, [searchParams]);
 
 	// Show loading state while determining auth type
@@ -172,7 +175,7 @@ function LoginContent() {
 					)}
 				</AnimatePresence>
 
-				<LocalLoginForm />
+			<LocalLoginForm authType={authType} />
 			</div>
 		</div>
 	);

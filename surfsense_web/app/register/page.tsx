@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
+import { fetchAuthMode } from "@/lib/auth-config";
 import { getAuthErrorDetails, isNetworkError, shouldRetry } from "@/lib/auth-errors";
 import { AmbientBackground } from "../login/AmbientBackground";
 
@@ -20,10 +21,15 @@ export default function RegisterPage() {
 
 	// Check authentication type and redirect if not LOCAL
 	useEffect(() => {
-		const authType = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE || "GOOGLE";
-		if (authType !== "LOCAL") {
-			router.push("/login");
-		}
+		fetchAuthMode()
+			.then((mode) => {
+				if (mode !== "LOCAL") {
+					router.push("/login");
+				}
+			})
+			.catch(() => {
+				router.push("/login");
+			});
 	}, [router]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
