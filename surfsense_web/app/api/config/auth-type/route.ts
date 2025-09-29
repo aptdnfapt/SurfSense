@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
-const backendUrl = process.env.FASTAPI_BACKEND_URL || process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL;
+// Prefer explicit FASTAPI_BACKEND_URL, then NEXT_PUBLIC_FASTAPI_BACKEND_URL, then generic NEXT_PUBLIC_API_URL
+const backendUrl =
+  process.env.FASTAPI_BACKEND_URL ||
+  process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL ||
+  process.env.NEXT_PUBLIC_API_URL;
 
 export async function GET() {
 	if (!backendUrl) {

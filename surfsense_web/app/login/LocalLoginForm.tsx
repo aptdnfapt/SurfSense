@@ -34,16 +34,17 @@ export function LocalLoginForm({ authType }: LocalLoginFormProps) {
 			formData.append("password", password);
 			formData.append("grant_type", "password");
 
-			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/auth/jwt/login`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-					},
-					body: formData.toString(),
-				}
-			);
+			const apiBase =
+				process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL ||
+				process.env.NEXT_PUBLIC_API_URL;
+
+			const response = await fetch(`${apiBase}/auth/jwt/login`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded",
+				},
+				body: formData.toString(),
+			});
 
 			const data = await response.json();
 
