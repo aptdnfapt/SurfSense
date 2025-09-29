@@ -92,10 +92,7 @@ export default function RegisterPage() {
 		const loadingToast = toast.loading("Creating your account...");
 
 		try {
-			const apiBase =
-				process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL ||
-				process.env.NEXT_PUBLIC_API_URL;
-			const response = await fetch(`${apiBase}/auth/register`, {
+			const response = await fetch(`/api/auth/register`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
