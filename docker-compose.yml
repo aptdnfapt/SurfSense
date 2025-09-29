@@ -11,6 +11,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_DB=${POSTGRES_DB:-surfsense}
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4
@@ -23,6 +24,40 @@ services:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
       - db
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./surfsense_backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./surfsense_backend/.env
+    environment:
+      - PYTHONPATH=/app
+      - UVICORN_LOOP=asyncio
+      - UNSTRUCTURED_HAS_PATCHED_LOOP=1
+      - LANGCHAIN_TRACING_V2=false
+      - LANGSMITH_TRACING=false
+    depends_on:
+      - db
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./surfsense_web
+      dockerfile: Dockerfile
+    env_file:
+      - ./surfsense_web/.env
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    restart: unless-stopped
 
 volumes:
   postgres_data:

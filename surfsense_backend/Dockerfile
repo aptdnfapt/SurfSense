@@ -69,4 +69,7 @@ ENV UVICORN_LOOP=asyncio
 
 # Run
 EXPOSE 8000
-CMD ["python", "main.py", "--reload"] 
+ENV UVICORN_HOST=0.0.0.0 \
+    UVICORN_PORT=8000 \
+    UVICORN_WORKERS=2
+CMD ["python", "main.py"]
