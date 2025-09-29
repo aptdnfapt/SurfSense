@@ -4,6 +4,7 @@ from .airtable_add_connector_route import (
     router as airtable_add_connector_router,
 )
 from .chats_routes import router as chats_router
+from .config_routes import router as config_router
 from .documents_routes import router as documents_router
 from .google_calendar_add_connector_route import (
     router as google_calendar_add_connector_router,
@@ -29,3 +30,4 @@ router.include_router(google_gmail_add_connector_router)
 router.include_router(airtable_add_connector_router)
 router.include_router(llm_config_router)
 router.include_router(logs_router)
+router.include_router(config_router)

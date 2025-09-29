@@ -16,15 +16,59 @@ export default function RegisterPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [errorTitle, setErrorTitle] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 	const router = useRouter();
 
 	// Check authentication type and redirect if not LOCAL
 	useEffect(() => {
-		const authType = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE || "GOOGLE";
-		if (authType !== "LOCAL") {
-			router.push("/login");
-		}
+		let isActive = true;
+
+		const fetchAuthType = async () => {
+			try {
+				const response = await fetch("/api/config/auth-type", { cache: "no-store" });
+
+				if (!isActive) return;
+
+				if (response.ok) {
+					const data: { auth_type?: string; authType?: string } = await response.json();
+					const type = (data.auth_type || data.authType || "GOOGLE").toUpperCase();
+
+					if (type !== "LOCAL") {
+						router.replace("/login");
+						return;
+					}
+				} else {
+					router.replace("/login");
+					return;
+				}
+			} catch (err) {
+				if (!isActive) return;
+				router.replace("/login");
+				return;
+			} finally {
+				if (isActive) {
+					setIsCheckingAuth(false);
+				}
+			}
+		};
+
+		fetchAuthType();
+
+		return () => {
+			isActive = false;
+		};
 	}, [router]);
+
+	if (isCheckingAuth) {
+		return (
+			<div className="relative w-full overflow-hidden">
+				<AmbientBackground />
+				<div className="mx-auto flex h-screen max-w-lg flex-col items-center justify-center">
+					<Logo className="rounded-md" />
+				</div>
+			</div>
+		);
+	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

@@ -2,23 +2,21 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { getAuthErrorDetails, isNetworkError, shouldRetry } from "@/lib/auth-errors";
 
-export function LocalLoginForm() {
+interface LocalLoginFormProps {
+	authType: string | null;
+}
+
+export function LocalLoginForm({ authType }: LocalLoginFormProps) {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [errorTitle, setErrorTitle] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
-	const [authType, setAuthType] = useState<string | null>(null);
 	const router = useRouter();
-
-	useEffect(() => {
-		// Get the auth type from environment variables
-		setAuthType(process.env.NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE || "GOOGLE");
-	}, []);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

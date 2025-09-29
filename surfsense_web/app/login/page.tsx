@@ -24,7 +24,6 @@ function LoginContent() {
 		const message = searchParams.get("message");
 		const logout = searchParams.get("logout");
 
-		// Show registration success message
 		if (registered === "true") {
 			toast.success("Registration successful!", {
 				description: "You can now sign in with your credentials",
@@ -32,7 +31,6 @@ function LoginContent() {
 			});
 		}
 
-		// Show logout confirmation
 		if (logout === "true") {
 			toast.success("Logged out successfully", {
 				description: "You have been securely logged out",
@@ -40,27 +38,20 @@ function LoginContent() {
 			});
 		}
 
-		// Show error messages from OAuth or other flows using auth-errors utility
 		if (error) {
-			// Use the auth-errors utility to get proper error details
 			const errorDetails = getAuthErrorDetails(error);
-
-			// If we have a custom message from URL params, use it as description
 			const errorDescription = message ? decodeURIComponent(message) : errorDetails.description;
 
-			// Set persistent error display
 			setUrlError({
 				title: errorDetails.title,
 				message: errorDescription,
 			});
 
-			// Show toast with conditional retry action
 			const toastOptions: any = {
 				description: errorDescription,
 				duration: 6000,
 			};
 
-			// Add retry action if the error is retryable
 			if (shouldRetry(error)) {
 				toastOptions.action = {
 					label: "Retry",
@@ -71,18 +62,46 @@ function LoginContent() {
 			toast.error(errorDetails.title, toastOptions);
 		}
 
-		// Show general messages
 		if (message && !error && !registered && !logout) {
 			toast.info("Notice", {
 				description: decodeURIComponent(message),
 				duration: 4000,
 			});
 		}
-
-		// Get the auth type from environment variables
-		setAuthType(process.env.NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE || "GOOGLE");
-		setIsLoading(false);
 	}, [searchParams]);
+
+	useEffect(() => {
+		let isActive = true;
+
+		const fetchAuthType = async () => {
+			try {
+				const response = await fetch("/api/config/auth-type", { cache: "no-store" });
+
+				if (!isActive) return;
+
+				if (response.ok) {
+					const data: { auth_type?: string; authType?: string } = await response.json();
+					const type = (data.auth_type || data.authType || "GOOGLE").toUpperCase();
+					setAuthType(type);
+				} else {
+					setAuthType("GOOGLE");
+				}
+			} catch (err) {
+				if (!isActive) return;
+				setAuthType("GOOGLE");
+			} finally {
+				if (isActive) {
+					setIsLoading(false);
+				}
+			}
+		};
+
+		fetchAuthType();
+
+		return () => {
+			isActive = false;
+		};
+	}, []);
 
 	// Show loading state while determining auth type
 	if (isLoading) {
@@ -172,7 +191,7 @@ function LoginContent() {
 					)}
 				</AnimatePresence>
 
-				<LocalLoginForm />
+				<LocalLoginForm authType={authType} />
 			</div>
 		</div>
 	);
