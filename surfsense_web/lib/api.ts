@@ -54,18 +54,9 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
  */
 export function getApiUrl(path: string): string {
 	// Remove leading slash if present
-	const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+	const cleanPath = path.startsWith("/") ? path : `/${path}`;
 
-	// Get backend URL from environment variable
-	const baseUrl = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL;
-
-	if (!baseUrl) {
-		console.error("NEXT_PUBLIC_FASTAPI_BACKEND_URL is not defined");
-		return "";
-	}
-
-	// Combine base URL and path
-	return `${baseUrl}/${cleanPath}`;
+	return `/api/proxy${cleanPath}`;
 }
 
 /**

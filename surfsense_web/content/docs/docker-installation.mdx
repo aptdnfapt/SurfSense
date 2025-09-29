@@ -144,8 +144,8 @@ For more details, see the [Uvicorn documentation](https://www.uvicorn.org/#comma
 
 | ENV VARIABLE                    | DESCRIPTION                                                |
 | ------------------------------- | ---------------------------------------------------------- |
-| NEXT_PUBLIC_FASTAPI_BACKEND_URL | URL of the backend service (e.g., `http://localhost:8000`) |
-| NEXT_PUBLIC_ETL_SERVICE         | Document parsing service (should match backend ETL_SERVICE): `UNSTRUCTURED`, `LLAMACLOUD`, or `DOCLING` - affects supported file formats in upload interface |
+| NEXT_PUBLIC_FASTAPI_BACKEND_URL | Leave as `/api/proxy` to route browser requests through the frontend proxy |
+| BACKEND_BASE_URL                | Actual backend URL used by the proxy (default `http://backend:8000`) |
 
 2. **Build and Start Containers**
 

@@ -7,7 +7,7 @@ import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { getAuthErrorDetails, shouldRetry } from "@/lib/auth-errors";
-import { fetchAuthMode, type AuthMode } from "@/lib/auth-config";
+import { loadRuntimeConfig, type AuthMode } from "@/lib/auth-config";
 import { AmbientBackground } from "./AmbientBackground";
 import { GoogleLoginButton } from "./GoogleLoginButton";
 import { LocalLoginForm } from "./LocalLoginForm";
@@ -81,8 +81,8 @@ function LoginContent() {
 			});
 		}
 
-		fetchAuthMode()
-			.then((mode) => setAuthType(mode))
+		loadRuntimeConfig()
+			.then((config) => setAuthType(config.authType))
 			.catch(() => setAuthType("GOOGLE"))
 			.finally(() => setIsLoading(false));
 	}, [searchParams]);

@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
-import { fetchAuthMode } from "@/lib/auth-config";
+import { loadRuntimeConfig } from "@/lib/auth-config";
 import { getAuthErrorDetails, isNetworkError, shouldRetry } from "@/lib/auth-errors";
+import { getApiUrl } from "@/lib/api";
 import { AmbientBackground } from "../login/AmbientBackground";
 
 export default function RegisterPage() {
@@ -21,9 +22,9 @@ export default function RegisterPage() {
 
 	// Check authentication type and redirect if not LOCAL
 	useEffect(() => {
-		fetchAuthMode()
-			.then((mode) => {
-				if (mode !== "LOCAL") {
+		loadRuntimeConfig()
+			.then((config) => {
+				if (config.authType !== "LOCAL") {
 					router.push("/login");
 				}
 			})
@@ -54,7 +55,7 @@ export default function RegisterPage() {
 		const loadingToast = toast.loading("Creating your account...");
 
 		try {
-			const response = await fetch(`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/auth/register`, {
+			const response = await fetch(getApiUrl("/auth/register"), {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

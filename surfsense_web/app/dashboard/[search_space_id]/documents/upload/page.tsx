@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, FileType, Info, Tag, Upload, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { getApiUrl } from "@/lib/api";
+import { loadRuntimeConfig } from "@/lib/auth-config";
 
 // Grid pattern component inspired by Aceternity UI
 function GridPattern() {
@@ -57,9 +59,16 @@ export default function FileUploader() {
 		"text/plain": [".txt"],
 	};
 
+	const [etlService, setEtlService] = useState<string>("UNSTRUCTURED");
+
+	useEffect(() => {
+		loadRuntimeConfig()
+			.then((config) => setEtlService(config.etlService))
+			.catch(() => setEtlService("UNSTRUCTURED"));
+	}, []);
+
 	// Conditionally set accepted file types based on ETL service
-	const getAcceptedFileTypes = () => {
-		const etlService = process.env.NEXT_PUBLIC_ETL_SERVICE;
+	const getAcceptedFileTypes = useCallback(() => {
 
 		if (etlService === "LLAMACLOUD") {
 			return {
@@ -205,10 +214,13 @@ export default function FileUploader() {
 				...audioFileTypes,
 			};
 		}
-	};
+	}, [etlService]);
 
-	const acceptedFileTypes = getAcceptedFileTypes();
-	const supportedExtensions = Array.from(new Set(Object.values(acceptedFileTypes).flat())).sort();
+	const acceptedFileTypes = useMemo(() => getAcceptedFileTypes(), [getAcceptedFileTypes]);
+	const supportedExtensions = useMemo(
+		() => Array.from(new Set(Object.values(acceptedFileTypes).flat())).sort(),
+		[acceptedFileTypes]
+	);
 
 	const onDrop = useCallback((acceptedFiles: File[]) => {
 		setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -255,7 +267,7 @@ export default function FileUploader() {
 			}, 200);
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents/fileupload`,
+				getApiUrl("/api/v1/documents/fileupload"),
 				{
 					method: "POST",
 					headers: {

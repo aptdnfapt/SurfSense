@@ -2,12 +2,13 @@
 import { IconBrandGoogleFilled } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/Logo";
+import { getApiUrl } from "@/lib/api";
 import { AmbientBackground } from "./AmbientBackground";
 
 export function GoogleLoginButton() {
 	const handleGoogleLogin = () => {
 		// Redirect to Google OAuth authorization URL
-		fetch(`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/auth/google/authorize`)
+		fetch(getApiUrl("/auth/google/authorize"))
 			.then((response) => {
 				if (!response.ok) {
 					throw new Error("Failed to get authorization URL");

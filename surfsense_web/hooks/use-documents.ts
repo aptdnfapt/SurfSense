@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { fetchWithAuth, getApiUrl } from "@/lib/api";
 
 export interface Document {
 	id: number;
@@ -41,12 +42,9 @@ export function useDocuments(searchSpaceId: number, lazy: boolean = false) {
 
 		try {
 			setLoading(true);
-			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents?search_space_id=${searchSpaceId}`,
+			const response = await fetchWithAuth(
+				getApiUrl(`/api/v1/documents?search_space_id=${searchSpaceId}`),
 				{
-					headers: {
-						Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
-					},
 					method: "GET",
 				}
 			);
@@ -84,12 +82,9 @@ export function useDocuments(searchSpaceId: number, lazy: boolean = false) {
 	const deleteDocument = useCallback(
 		async (documentId: number) => {
 			try {
-				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents/${documentId}`,
+				const response = await fetchWithAuth(
+					getApiUrl(`/api/v1/documents/${documentId}`),
 					{
-						headers: {
-							Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
-						},
 						method: "DELETE",
 					}
 				);

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getAuthErrorDetails, isNetworkError, shouldRetry } from "@/lib/auth-errors";
 import type { AuthMode } from "@/lib/auth-config";
+import { getApiUrl } from "@/lib/api";
 
 type LocalLoginFormProps = {
 	authType: AuthMode;
@@ -36,7 +37,7 @@ export function LocalLoginForm({ authType }: LocalLoginFormProps) {
 			formData.append("grant_type", "password");
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/auth/jwt/login`,
+				getApiUrl("/auth/jwt/login"),
 				{
 					method: "POST",
 					headers: {
