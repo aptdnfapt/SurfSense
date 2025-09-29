@@ -14,17 +14,23 @@ export async function loadRuntimeConfig(): Promise<RuntimeConfig> {
   }
 
   try {
-    const response = await fetch("/api/proxy/api/v1/auth/config", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch auth config: ${response.status}`);
+    let response: Response | null = null;
+    const attempts = 6;
+    const baseDelayMs = 500;
+    for (let i = 0; i < attempts; i++) {
+      try {
+        response = await fetch("/api/proxy/api/v1/auth/config", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+        });
+        if (response.ok) break;
+      } catch (_) {}
+      if (i < attempts - 1) {
+        await new Promise((r) => setTimeout(r, baseDelayMs * Math.pow(2, i)));
+      }
     }
+    if (!response || !response.ok) throw new Error("auth config fetch failed");
 
     const data = (await response.json()) as {
       authType?: string;
@@ -41,9 +47,9 @@ export async function loadRuntimeConfig(): Promise<RuntimeConfig> {
       etlService,
       backendBaseUrl,
     };
-  } catch (error) {
-    console.error("Unable to load runtime config, defaulting to GOOGLE + UNSTRUCTURED.", error);
-    cachedConfig = {
+  } catch (_) {
+    // Do not cache fallback so subsequent calls can succeed once backend is ready
+    return {
       authType: "GOOGLE",
       etlService: "UNSTRUCTURED",
       backendBaseUrl: "",

@@ -38,6 +38,12 @@ services:
       - UNSTRUCTURED_HAS_PATCHED_LOOP=1
       - LANGCHAIN_TRACING_V2=false
       - LANGSMITH_TRACING=false
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/api/v1/auth/config >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
     depends_on:
       - db
     ports:
@@ -54,7 +60,8 @@ services:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
       - NODE_ENV=production
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     restart: unless-stopped
