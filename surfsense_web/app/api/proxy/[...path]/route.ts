@@ -16,13 +16,20 @@ async function proxyRequest(request: NextRequest, params: { path?: string[] }) {
 
   const isBodyless = request.method === "GET" || request.method === "HEAD";
 
-  const response = await fetch(targetUrl, {
+  const fetchOptions: any = {
     method: request.method,
     headers,
-    body: isBodyless ? undefined : request.body,
     redirect: "manual",
     cache: "no-store",
-  });
+  };
+
+  if (!isBodyless) {
+    // Node.js fetch requires duplex: 'half' when sending a ReadableStream body
+    fetchOptions.body = request.body;
+    fetchOptions.duplex = "half";
+  }
+
+  const response = await fetch(targetUrl, fetchOptions as RequestInit);
 
   const responseHeaders = new Headers(response.headers);
 
