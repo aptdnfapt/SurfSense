@@ -103,9 +103,6 @@ export default function RegisterPage() {
 				body: JSON.stringify({
 					email,
 					password,
-					is_active: true,
-					is_superuser: false,
-					is_verified: true,
 				}),
 			});
 
