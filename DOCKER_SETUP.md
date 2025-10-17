@@ -36,6 +36,38 @@ PGADMIN_DEFAULT_EMAIL=admin@surfsense.com
 PGADMIN_DEFAULT_PASSWORD=surfsense
 ```
 
+## 🎉 Runtime Configuration System (v0.0.8+)
+
+**What Changed:**
+SurfSense now uses a runtime configuration system that allows you to change settings without rebuilding Docker images!
+
+**Benefits:**
+- ✅ Change `AUTH_TYPE`, `ETL_SERVICE`, etc. without rebuilding
+- ✅ Restart containers and changes apply immediately
+- ✅ Much faster development and deployment workflow
+- ✅ Models download at runtime (not baked into images)
+
+**How It Works:**
+1. Backend exposes `/api/v1/config` endpoint with safe configuration
+2. Frontend fetches config at startup from this endpoint
+3. No more `NEXT_PUBLIC_*` variables baked into JavaScript at build time
+
+**Example: Switching Authentication**
+```bash
+# Change AUTH_TYPE in backend .env
+sed -i 's/AUTH_TYPE=GOOGLE/AUTH_TYPE=LOCAL/' surfsense_backend/.env
+
+# Restart backend only (no rebuild needed!)
+docker compose restart backend
+
+# Frontend automatically uses new auth type
+```
+
+**For Complete Details:**
+See `DOCKER_RUNTIME_CONFIG_MIGRATION_PLAN.md` for the full migration guide and technical details.
+
+---
+
 ## Deployment Options
 
 SurfSense uses a flexible Docker Compose setup that allows you to choose between different deployment modes:
