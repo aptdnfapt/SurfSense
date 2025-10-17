@@ -13,6 +13,7 @@ from .google_gmail_add_connector_route import (
 )
 from .llm_config_routes import router as llm_config_router
 from .logs_routes import router as logs_router
+from .config_routes import router as config_router
 from .luma_add_connector_route import router as luma_add_connector_router
 from .podcasts_routes import router as podcasts_router
 from .search_source_connectors_routes import router as search_source_connectors_router
@@ -31,3 +32,4 @@ router.include_router(airtable_add_connector_router)
 router.include_router(luma_add_connector_router)
 router.include_router(llm_config_router)
 router.include_router(logs_router)
+router.include_router(config_router)
