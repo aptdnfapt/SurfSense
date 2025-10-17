@@ -54,17 +54,15 @@ function getBackendUrl(): string {
     return config.backendUrl;
   }
   
-  // No cached config - throw proper error instead of silent fallback
-  if (typeof window !== 'undefined') {
-    throw new Error('Backend configuration not available. Please ensure fetchConfig() was called before using API calls.');
+  // Fallback to env variable (works for both SSR and client before config loads)
+  const baseUrl = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL;
+  if (baseUrl) {
+    return baseUrl;
   }
   
-  // Only for server-side rendering (build time), use env variable
-  const baseUrl = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL;
-  if (!baseUrl) {
-    throw new Error('Backend URL not configured. Set NEXT_PUBLIC_FASTAPI_BACKEND_URL environment variable.');
-  }
-  return baseUrl;
+  // Last resort: localhost (development default)
+  console.warn('Using default backend URL. Config not yet loaded and NEXT_PUBLIC_FASTAPI_BACKEND_URL not set.');
+  return 'http://localhost:8000';
 }
 
 /**
