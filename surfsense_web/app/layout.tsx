@@ -90,9 +90,8 @@ export default async function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 					defaultTheme="light"
-					suppressHydrationWarning
 				>
-					<RootProvider suppressHydrationWarning>
+					<RootProvider>
 						{children}
 						<Toaster />
 					</RootProvider>

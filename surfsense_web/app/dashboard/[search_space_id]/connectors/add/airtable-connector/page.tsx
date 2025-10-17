@@ -1,5 +1,6 @@
-import { getApiUrl } from "@/lib/api";
 "use client";
+
+import { getApiUrl } from "@/lib/api";
 
 import { ArrowLeft, Check, ExternalLink, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
