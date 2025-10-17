@@ -978,6 +978,39 @@ docker-compose -f docker-compose.dev.yml restart backend
 - ✅ Config changes work without frontend rebuild
 - ✅ Hot reload still functional
 
+### ⚠️ CRITICAL WARNINGS - Mistakes from Phase 3 (DO NOT REPEAT!)
+
+#### 1. "use client" Must Be First Line
+```typescript
+// ❌ WRONG - Causes "Ecmascript file had an error"
+import { getApiUrl } from "@/lib/api";
+"use client";
+
+// ✅ CORRECT
+"use client";
+import { getApiUrl } from "@/lib/api";
+```
+
+#### 2. Missing Commas in fetch()
+```typescript
+// ❌ WRONG
+fetch(getApiUrl(`/api/endpoint`) { method: "POST" })
+
+// ✅ CORRECT  
+fetch(getApiUrl(`/api/endpoint`), { method: "POST" })
+```
+
+#### 3. Extra Closing Parentheses
+```typescript
+// ❌ WRONG: getApiUrl(`...`)),
+// ✅ CORRECT: getApiUrl(`...`),
+```
+
+#### 4. Always Test Before Committing
+```bash
+docker compose -f docker-compose.dev.yml exec frontend npx tsc --noEmit
+```
+
 ### Troubleshooting
 ```bash
 # Check frontend build for errors
