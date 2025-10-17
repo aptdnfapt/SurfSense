@@ -1,5 +1,6 @@
-import { getApiUrl } from "@/lib/api";
 "use client";
+
+import { getApiUrl } from "@/lib/api";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Check, CircleAlert, Github, Info, ListChecks, Loader2 } from "lucide-react";
