@@ -1,5 +1,6 @@
-import { getApiUrl } from "@/lib/api";
 "use client";
+
+import { getApiUrl } from "@/lib/api";
 
 import { format } from "date-fns";
 import {
