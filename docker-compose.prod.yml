@@ -1,0 +1,74 @@
+services:
+  db:
+    image: ankane/pgvector:latest
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-surfsense}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./surfsense_backend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      # Only mount model volumes (no source code mounting)
+      - backend_models:/app/models
+      - backend_hf_cache:/root/.cache/huggingface
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./surfsense_backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
+      - PYTHONPATH=/app
+      - UVICORN_LOOP=asyncio
+      - MODEL_PATH=/app/models
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./surfsense_web
+      dockerfile: Dockerfile.prod
+      args:
+        - NODE_ENV=production
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    env_file:
+      - ./surfsense_web/.env
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@surfsense.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-surfsense}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  backend_models:
+  backend_hf_cache:

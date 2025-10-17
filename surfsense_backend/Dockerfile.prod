@@ -1,0 +1,46 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install essential system dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    python3-dev \
+    ca-certificates \
+    curl \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    libgtk-3-0 \
+    libxss1 \
+    libasound2 \
+    libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Update certificates
+RUN update-ca-certificates
+RUN pip install --upgrade certifi pip-system-certs
+
+# Copy requirements
+COPY pyproject.toml uv.lock ./
+
+# Install Python dependencies (production only)
+RUN pip install --no-cache-dir uv && \
+    uv pip install --system --no-cache-dir -e .
+
+# Set SSL environment variables
+ENV SSL_CERT_FILE=/usr/local/lib/python3.12/site-packages/certifi/cacert.pem
+ENV REQUESTS_CA_BUNDLE=/usr/local/lib/python3.12/site-packages/certifi/cacert.pem
+ENV PYTHONPATH=/app
+ENV UVICORN_LOOP=asyncio
+ENV MODEL_PATH=/app/models
+
+# Copy source code
+COPY . .
+
+EXPOSE 8000
+
+# Production server (NO --reload flag)
+CMD ["python", "main.py"]
