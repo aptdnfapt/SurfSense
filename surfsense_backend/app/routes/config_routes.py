@@ -3,8 +3,8 @@ Configuration endpoint for runtime configuration.
 Returns safe, non-sensitive configuration values for frontend consumption.
 """
 
+import os
 from fastapi import APIRouter
-from app.config import config
 
 router = APIRouter()
 
@@ -18,8 +18,9 @@ async def get_frontend_config():
     - Never expose: API keys, OAuth secrets, database URLs, etc.
     - Only expose: UI configuration, feature flags, safe metadata
     """
-    auth_type = config.AUTH_TYPE or "GOOGLE"
-    etl_service = config.ETL_SERVICE or "UNSTRUCTURED"
+    # Read environment variables directly for true runtime configuration
+    auth_type = os.getenv("AUTH_TYPE") or "GOOGLE"
+    etl_service = os.getenv("ETL_SERVICE") or "UNSTRUCTURED"
 
     return {
         # Core configuration (safe to expose)

@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { getApiUrl } from "@/lib/api";
 
 export type LogLevel = "DEBUG" | "INFO" | "WARNING" | "ERROR" | "CRITICAL";
 export type LogStatus = "IN_PROGRESS" | "SUCCESS" | "FAILED";
@@ -96,7 +97,7 @@ export function useLogs(searchSpaceId?: number, filters: LogFilters = {}) {
 				if (options.limit !== undefined) params.append("limit", options.limit.toString());
 
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/logs/?${params}`,
+					getApiUrl(`/api/v1/logs/?${params}`),
 					{
 						headers: {
 							Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -147,7 +148,7 @@ export function useLogs(searchSpaceId?: number, filters: LogFilters = {}) {
 	// Function to create a new log
 	const createLog = useCallback(async (logData: Omit<Log, "id" | "created_at">) => {
 		try {
-			const response = await fetch(`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/logs/`, {
+			const response = await fetch(getApiUrl('/api/v1/logs/'), {
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -180,7 +181,7 @@ export function useLogs(searchSpaceId?: number, filters: LogFilters = {}) {
 		) => {
 			try {
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/logs/${logId}`,
+					getApiUrl(`/api/v1/logs/${logId}`),
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -213,7 +214,7 @@ export function useLogs(searchSpaceId?: number, filters: LogFilters = {}) {
 	const deleteLog = useCallback(async (logId: number) => {
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/logs/${logId}`,
+				getApiUrl(`/api/v1/logs/${logId}`),
 				{
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -241,7 +242,7 @@ export function useLogs(searchSpaceId?: number, filters: LogFilters = {}) {
 	const getLog = useCallback(async (logId: number) => {
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/logs/${logId}`,
+				getApiUrl(`/api/v1/logs/${logId}`),
 				{
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -288,7 +289,7 @@ export function useLogsSummary(searchSpaceId: number, hours: number = 24) {
 		try {
 			setLoading(true);
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/logs/search-space/${searchSpaceId}/summary?hours=${hours}`,
+				getApiUrl(`/api/v1/logs/search-space/${searchSpaceId}/summary?hours=${hours}`),
 				{
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,

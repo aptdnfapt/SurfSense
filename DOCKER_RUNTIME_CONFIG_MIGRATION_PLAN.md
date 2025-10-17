@@ -767,38 +767,216 @@ sed -i 's/AUTH_TYPE=LOCAL/AUTH_TYPE=GOOGLE/' surfsense_backend/.env
 docker-compose -f docker-compose.dev.yml restart backend
 ```
 
-### Success Criteria
+### Success Criteria (Core Files)
 - ✅ Config library successfully fetches from backend
 - ✅ Login page shows correct auth UI based on runtime config
 - ✅ Upload page shows correct file types based on runtime ETL service
 - ✅ Config changes without frontend rebuild
 - ✅ No errors in browser console
 
-### Remaining Files to Update (Lower Priority)
+---
 
-These files also use `NEXT_PUBLIC_*` variables. Update them following the same pattern as above:
+## ⚠️ CRITICAL: Update ALL Remaining Files (REQUIRED, NOT OPTIONAL)
 
-**API Call Files (~15 files):**
-- `surfsense_web/app/dashboard/page.tsx`
-- `surfsense_web/app/dashboard/searchspaces/page.tsx`
-- `surfsense_web/app/dashboard/[search_space_id]/chats/chats-client.tsx`
-- `surfsense_web/app/dashboard/[search_space_id]/researcher/[[...chat_id]]/page.tsx`
-- `surfsense_web/app/dashboard/[search_space_id]/documents/youtube/page.tsx`
-- `surfsense_web/app/dashboard/[search_space_id]/documents/webpage/page.tsx`
-- `surfsense_web/app/dashboard/[search_space_id]/connectors/add/*.tsx` (4 files)
-- `surfsense_web/hooks/use-*.ts` (11 files)
+**DO NOT RELY ON SILENT FALLBACKS!** All files using `NEXT_PUBLIC_*` must be updated.
 
-**Pattern to follow:**
-```typescript
-// OLD:
-`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/...`
+Silent fallbacks like `config?.backendUrl || 'http://localhost:8000'` are dangerous because:
+- They hide configuration errors
+- Make debugging impossible
+- Fail silently in production
+- Violate the whole point of runtime config
 
-// NEW:
-import { getConfig } from '@/lib/config';
-const config = getConfig();
-const backendUrl = config?.backendUrl || 'http://localhost:8000';
-`${backendUrl}/api/v1/...`
+### All Files That MUST Be Updated
+
+Run this to find remaining files:
+```bash
+grep -r "NEXT_PUBLIC_FASTAPI_BACKEND_URL" surfsense_web/app surfsense_web/hooks --include="*.tsx" --include="*.ts" | grep -v "node_modules"
 ```
+
+**Files requiring updates (~21 files):**
+
+**Page Components (7 files):**
+1. `surfsense_web/app/(home)/login/GoogleLoginButton.tsx`
+2. `surfsense_web/app/dashboard/page.tsx`
+3. `surfsense_web/app/dashboard/searchspaces/page.tsx`
+4. `surfsense_web/app/dashboard/[search_space_id]/chats/chats-client.tsx`
+5. `surfsense_web/app/dashboard/[search_space_id]/researcher/[[...chat_id]]/page.tsx`
+6. `surfsense_web/app/dashboard/[search_space_id]/documents/youtube/page.tsx`
+7. `surfsense_web/app/dashboard/[search_space_id]/documents/webpage/page.tsx`
+
+**Connector Pages (4 files):**
+8. `surfsense_web/app/dashboard/[search_space_id]/connectors/add/airtable-connector/page.tsx`
+9. `surfsense_web/app/dashboard/[search_space_id]/connectors/add/github-connector/page.tsx`
+10. `surfsense_web/app/dashboard/[search_space_id]/connectors/add/google-calendar-connector/page.tsx`
+11. `surfsense_web/app/dashboard/[search_space_id]/connectors/add/google-gmail-connector/page.tsx`
+
+**Hooks (10 files):**
+12. `surfsense_web/hooks/use-chat.ts`
+13. `surfsense_web/hooks/use-connectors.ts`
+14. `surfsense_web/hooks/use-connector-edit-page.ts`
+15. `surfsense_web/hooks/use-document-by-chunk.ts`
+16. `surfsense_web/hooks/use-documents.ts`
+17. `surfsense_web/hooks/use-llm-configs.ts`
+18. `surfsense_web/hooks/use-logs.ts`
+19. `surfsense_web/hooks/use-search-source-connectors.ts`
+20. `surfsense_web/hooks/use-search-spaces.ts`
+
+**Documentation (2 files - update later):**
+- `surfsense_web/content/docs/docker-installation.mdx`
+- `surfsense_web/content/docs/manual-installation.mdx`
+
+### Recommended Pattern: Use `getApiUrl()` Helper
+
+**Why this pattern?**
+- ✅ Consistent across all files
+- ✅ Already exists in `lib/api.ts`
+- ✅ Uses runtime config internally
+- ✅ One-line change per file
+- ✅ No silent fallbacks needed
+- ✅ Easier to maintain
+
+**The pattern:**
+```typescript
+// OLD (REMOVE THIS):
+const response = await fetch(
+  `${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/chats/${chatId}`
+);
+
+// NEW (USE THIS):
+import { getApiUrl } from '@/lib/api';
+
+const response = await fetch(
+  getApiUrl(`/api/v1/chats/${chatId}`)
+);
+```
+
+### Example Updates
+
+#### Example 1: Hook File (use-chat.ts)
+```typescript
+// BEFORE:
+export function useChat(chatId: string) {
+  const { data } = useSWR(
+    chatId ? `${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/chats/${chatId}` : null
+  );
+}
+
+// AFTER:
+import { getApiUrl } from '@/lib/api';
+
+export function useChat(chatId: string) {
+  const { data } = useSWR(
+    chatId ? getApiUrl(`/api/v1/chats/${chatId}`) : null
+  );
+}
+```
+
+#### Example 2: Page Component (youtube/page.tsx)
+```typescript
+// BEFORE:
+const response = await fetch(
+  `${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents/`,
+  { method: 'POST', body: formData }
+);
+
+// AFTER:
+import { getApiUrl } from '@/lib/api';
+
+const response = await fetch(
+  getApiUrl('/api/v1/documents/'),
+  { method: 'POST', body: formData }
+);
+```
+
+#### Example 3: Multiple URLs in Same File
+```typescript
+// BEFORE:
+const config = await fetch(`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/config`);
+const spaces = await fetch(`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/searchspaces`);
+
+// AFTER:
+import { getApiUrl } from '@/lib/api';
+
+const config = await fetch(getApiUrl('/api/v1/config'));
+const spaces = await fetch(getApiUrl('/api/v1/searchspaces'));
+```
+
+### Testing After Updates
+
+#### Test 1: Verify No NEXT_PUBLIC_* Usage Remains
+```bash
+# Check for any remaining usage in code files
+grep -r "NEXT_PUBLIC_FASTAPI_BACKEND_URL" surfsense_web/app surfsense_web/hooks \
+  --include="*.tsx" --include="*.ts" | \
+  grep -v "node_modules" | \
+  grep -v ".mdx" | \
+  grep -v "config.ts"
+
+# Expected: Only see config.ts and documentation files
+# If you see other files, they need updating!
+
+# Same check for auth type and ETL service
+grep -r "NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE\|NEXT_PUBLIC_ETL_SERVICE" \
+  surfsense_web/app surfsense_web/hooks \
+  --include="*.tsx" --include="*.ts" | \
+  grep -v "node_modules" | \
+  grep -v ".mdx"
+
+# Expected: No results (all removed)
+```
+
+#### Test 2: Test Each Updated File Works
+```bash
+# Start dev environment
+docker-compose -f docker-compose.dev.yml up -d
+
+# Test various pages in browser:
+# - http://localhost:3000/login
+# - http://localhost:3000/dashboard
+# - http://localhost:3000/dashboard/[id]/documents/upload
+# - http://localhost:3000/dashboard/[id]/chats
+
+# Check browser console - should have NO errors about undefined NEXT_PUBLIC_*
+```
+
+#### Test 3: Test Hot Reload Still Works
+```bash
+# Make a test change to a hook
+echo "// Test" >> surfsense_web/hooks/use-chat.ts
+
+# Check logs - should see fast refresh
+docker-compose -f docker-compose.dev.yml logs frontend | tail -10
+
+# Revert
+git checkout surfsense_web/hooks/use-chat.ts
+```
+
+#### Test 4: Integration Test - Full Flow
+```bash
+# 1. Change backend config
+sed -i 's/AUTH_TYPE=GOOGLE/AUTH_TYPE=LOCAL/' surfsense_backend/.env
+docker-compose -f docker-compose.dev.yml restart backend
+sleep 5
+
+# 2. Visit frontend (should show LOCAL auth without rebuild)
+curl -s http://localhost:3000/login | grep -i "email"
+
+# 3. Test API calls still work
+curl -s http://localhost:8000/api/v1/config | python3 -m json.tool
+
+# 4. Revert
+sed -i 's/AUTH_TYPE=LOCAL/AUTH_TYPE=GOOGLE/' surfsense_backend/.env
+docker-compose -f docker-compose.dev.yml restart backend
+```
+
+### Success Criteria (Complete Phase 3)
+- ✅ All 21 files updated to use `getApiUrl()` or runtime config
+- ✅ Zero grep results for `NEXT_PUBLIC_FASTAPI_BACKEND_URL` in code files (except config.ts and docs)
+- ✅ Zero grep results for `NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE`
+- ✅ Zero grep results for `NEXT_PUBLIC_ETL_SERVICE`
+- ✅ All pages load without console errors
+- ✅ Config changes work without frontend rebuild
+- ✅ Hot reload still functional
 
 ### Troubleshooting
 ```bash

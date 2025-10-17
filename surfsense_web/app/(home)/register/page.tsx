@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { getAuthErrorDetails, isNetworkError, shouldRetry } from "@/lib/auth-errors";
+import { fetchConfig } from '@/lib/config';
 import { AmbientBackground } from "../login/AmbientBackground";
 
 export default function RegisterPage() {
@@ -20,10 +21,14 @@ export default function RegisterPage() {
 
 	// Check authentication type and redirect if not LOCAL
 	useEffect(() => {
-		const authType = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE || "GOOGLE";
-		if (authType !== "LOCAL") {
+		fetchConfig().then(config => {
+			if (config.authType !== "LOCAL") {
+				router.push("/login");
+			}
+		}).catch(() => {
+			// If config fetch fails, default behavior is to redirect since we can't confirm LOCAL auth
 			router.push("/login");
-		}
+		});
 	}, [router]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +53,9 @@ export default function RegisterPage() {
 		const loadingToast = toast.loading("Creating your account...");
 
 		try {
-			const response = await fetch(`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/auth/register`, {
+			const config = await fetchConfig();
+			const backendUrl = config.backendUrl;
+			const response = await fetch(`${backendUrl}/auth/register`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

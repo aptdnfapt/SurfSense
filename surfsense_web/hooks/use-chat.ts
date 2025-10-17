@@ -2,6 +2,7 @@ import type { Message } from "@ai-sdk/react";
 import { useCallback, useEffect, useState } from "react";
 import type { ResearchMode } from "@/components/chat";
 import type { Document } from "@/hooks/use-documents";
+import { getApiUrl } from "@/lib/api";
 
 interface UseChatStateProps {
 	search_space_id: string;
@@ -54,7 +55,7 @@ export function useChatAPI({ token, search_space_id }: UseChatAPIProps) {
 
 			try {
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/chats/${Number(chatId)}`,
+					getApiUrl(`/api/v1/chats/${Number(chatId)}`),
 					{
 						method: "GET",
 						headers: {
@@ -90,7 +91,7 @@ export function useChatAPI({ token, search_space_id }: UseChatAPIProps) {
 
 			try {
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/chats/`,
+					getApiUrl('/api/v1/chats/'),
 					{
 						method: "POST",
 						headers: {
@@ -142,7 +143,7 @@ export function useChatAPI({ token, search_space_id }: UseChatAPIProps) {
 				const title = userMessages[0].content;
 
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/chats/${Number(chatId)}`,
+					getApiUrl(`/api/v1/chats/${Number(chatId)}`),
 					{
 						method: "PUT",
 						headers: {

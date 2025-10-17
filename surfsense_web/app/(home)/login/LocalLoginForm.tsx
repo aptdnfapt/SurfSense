@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getAuthErrorDetails, isNetworkError, shouldRetry } from "@/lib/auth-errors";
+import { fetchConfig } from '@/lib/config';
 
 export function LocalLoginForm() {
 	const [username, setUsername] = useState("");
@@ -16,8 +17,13 @@ export function LocalLoginForm() {
 	const router = useRouter();
 
 	useEffect(() => {
-		// Get the auth type from environment variables
-		setAuthType(process.env.NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE || "GOOGLE");
+		// Get the auth type from runtime config
+		fetchConfig().then(config => {
+			setAuthType(config.authType);
+		}).catch(() => {
+			// Fallback to default if config fetch fails
+			setAuthType("GOOGLE");
+		});
 	}, []);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -36,8 +42,10 @@ export function LocalLoginForm() {
 			formData.append("password", password);
 			formData.append("grant_type", "password");
 
+			const config = await fetchConfig();
+			const backendUrl = config.backendUrl;
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/auth/jwt/login`,
+				`${backendUrl}/auth/jwt/login`,
 				{
 					method: "POST",
 					headers: {

@@ -3,13 +3,14 @@
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { getApiUrl } from "@/lib/api";
 import { SearchSpaceForm } from "@/components/search-space-form";
 export default function SearchSpacesPage() {
 	const router = useRouter();
 	const handleCreateSearchSpace = async (data: { name: string; description: string }) => {
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/searchspaces`,
+				getApiUrl('/api/v1/searchspaces'),
 				{
 					method: "POST",
 					headers: {

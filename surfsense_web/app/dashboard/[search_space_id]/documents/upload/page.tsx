@@ -3,7 +3,7 @@
 import { CheckCircle2, FileType, Info, Tag, Upload, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { fetchConfig } from '@/lib/config';
 
 // Grid pattern component inspired by Aceternity UI
 function GridPattern() {
@@ -57,10 +58,16 @@ export default function FileUploader() {
 		"text/plain": [".txt"],
 	};
 
+	const [etlService, setEtlService] = useState<string>("UNSTRUCTURED");
+
+	useEffect(() => {
+		fetchConfig().then(config => {
+			setEtlService(config.etlService);
+		});
+	}, []);
+
 	// Conditionally set accepted file types based on ETL service
 	const getAcceptedFileTypes = () => {
-		const etlService = process.env.NEXT_PUBLIC_ETL_SERVICE;
-
 		if (etlService === "LLAMACLOUD") {
 			return {
 				// LlamaCloud supported file types
@@ -254,8 +261,10 @@ export default function FileUploader() {
 				});
 			}, 200);
 
+			const config = await fetchConfig();
+			const backendUrl = config.backendUrl;
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents/fileupload`,
+				`${backendUrl}/api/v1/documents/fileupload`,
 				{
 					method: "POST",
 					headers: {

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { getApiUrl } from "@/lib/api";
 import { toast } from "sonner";
 
 export interface LLMConfig {
@@ -61,7 +62,7 @@ export function useLLMConfigs(searchSpaceId: number | null) {
 		try {
 			setLoading(true);
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/llm-configs/?search_space_id=${searchSpaceId}`,
+				getApiUrl(`/api/v1/llm-configs/?search_space_id=${searchSpaceId}`),
 				{
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -92,7 +93,7 @@ export function useLLMConfigs(searchSpaceId: number | null) {
 	const createLLMConfig = async (config: CreateLLMConfig): Promise<LLMConfig | null> => {
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/llm-configs/`,
+				getApiUrl(`/api/v1/llm-configs/`),
 				{
 					method: "POST",
 					headers: {
@@ -122,7 +123,7 @@ export function useLLMConfigs(searchSpaceId: number | null) {
 	const deleteLLMConfig = async (id: number): Promise<boolean> => {
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/llm-configs/${id}`,
+				getApiUrl(`/api/v1/llm-configs/${id}`),
 				{
 					method: "DELETE",
 					headers: {
@@ -151,7 +152,7 @@ export function useLLMConfigs(searchSpaceId: number | null) {
 	): Promise<LLMConfig | null> => {
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/llm-configs/${id}`,
+				getApiUrl(`/api/v1/llm-configs/${id}`),
 				{
 					method: "PUT",
 					headers: {
@@ -203,7 +204,7 @@ export function useLLMPreferences(searchSpaceId: number | null) {
 		try {
 			setLoading(true);
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-spaces/${searchSpaceId}/llm-preferences`,
+				getApiUrl(`/api/v1/search-spaces/${searchSpaceId}/llm-preferences`),
 				{
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -239,7 +240,7 @@ export function useLLMPreferences(searchSpaceId: number | null) {
 
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-spaces/${searchSpaceId}/llm-preferences`,
+				getApiUrl(`/api/v1/search-spaces/${searchSpaceId}/llm-preferences`),
 				{
 					method: "PUT",
 					headers: {

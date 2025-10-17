@@ -1,3 +1,5 @@
+import { getApiUrl } from "@/lib/api";
+
 // Types for connector API
 export interface ConnectorConfig {
 	[key: string]: string;
@@ -33,7 +35,7 @@ export const ConnectorService = {
 	// Create a new connector
 	async createConnector(data: CreateConnectorRequest): Promise<Connector> {
 		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/`,
+			getApiUrl('/api/v1/search-source-connectors/'),
 			{
 				method: "POST",
 				headers: {
@@ -55,7 +57,7 @@ export const ConnectorService = {
 	// Get all connectors
 	async getConnectors(skip = 0, limit = 100): Promise<Connector[]> {
 		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/?skip=${skip}&limit=${limit}`,
+			getApiUrl(`/api/v1/search-source-connectors/?skip=${skip}&limit=${limit}`),
 			{
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -74,7 +76,7 @@ export const ConnectorService = {
 	// Get a specific connector
 	async getConnector(connectorId: number): Promise<Connector> {
 		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/${connectorId}`,
+			getApiUrl(`/api/v1/search-source-connectors/${connectorId}`),
 			{
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -93,7 +95,7 @@ export const ConnectorService = {
 	// Update a connector
 	async updateConnector(connectorId: number, data: CreateConnectorRequest): Promise<Connector> {
 		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/${connectorId}`,
+			getApiUrl(`/api/v1/search-source-connectors/${connectorId}`),
 			{
 				method: "PUT",
 				headers: {
@@ -115,7 +117,7 @@ export const ConnectorService = {
 	// Delete a connector
 	async deleteConnector(connectorId: number): Promise<void> {
 		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/${connectorId}`,
+			getApiUrl(`/api/v1/search-source-connectors/${connectorId}`),
 			{
 				method: "DELETE",
 				headers: {

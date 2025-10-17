@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { getConfig } from './config';
 
 /**
  * Custom fetch wrapper that handles authentication and redirects to home page on 401 Unauthorized
@@ -46,6 +47,26 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
 	return response;
 }
 
+function getBackendUrl(): string {
+  // Try cached config first
+  const config = getConfig();
+  if (config) {
+    return config.backendUrl;
+  }
+  
+  // No cached config - throw proper error instead of silent fallback
+  if (typeof window !== 'undefined') {
+    throw new Error('Backend configuration not available. Please ensure fetchConfig() was called before using API calls.');
+  }
+  
+  // Only for server-side rendering (build time), use env variable
+  const baseUrl = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL;
+  if (!baseUrl) {
+    throw new Error('Backend URL not configured. Set NEXT_PUBLIC_FASTAPI_BACKEND_URL environment variable.');
+  }
+  return baseUrl;
+}
+
 /**
  * Get the full API URL
  *
@@ -56,13 +77,7 @@ export function getApiUrl(path: string): string {
 	// Remove leading slash if present
 	const cleanPath = path.startsWith("/") ? path.slice(1) : path;
 
-	// Get backend URL from environment variable
-	const baseUrl = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL;
-
-	if (!baseUrl) {
-		console.error("NEXT_PUBLIC_FASTAPI_BACKEND_URL is not defined");
-		return "";
-	}
+	const baseUrl = getBackendUrl();
 
 	// Combine base URL and path
 	return `${baseUrl}/${cleanPath}`;

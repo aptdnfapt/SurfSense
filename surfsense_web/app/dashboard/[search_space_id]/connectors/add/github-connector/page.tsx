@@ -1,3 +1,4 @@
+import { getApiUrl } from "@/lib/api";
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -107,7 +108,7 @@ export default function GithubConnectorPage() {
 			}
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/github/repositories/`,
+				getApiUrl(`/api/v1/github/repositories/`),
 				{
 					method: "POST",
 					headers: {

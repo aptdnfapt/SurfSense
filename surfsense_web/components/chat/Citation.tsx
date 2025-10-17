@@ -7,7 +7,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getConnectorIcon } from "./ConnectorComponents";
+import { ConnectorIcon } from "./ConnectorComponents";
 import type { Source } from "./types";
 
 type CitationProps = {
@@ -41,7 +41,7 @@ export const Citation = memo(({ citationId, citationText, position, source }: Ci
 						<Card className="border-0 shadow-none">
 							<div className="p-3 flex items-start gap-3">
 								<div className="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-muted rounded-full">
-									{getConnectorIcon(source.connectorType || "")}
+									<ConnectorIcon type={source.connectorType || ""} />
 								</div>
 								<div className="flex-1">
 									<div className="flex items-center gap-2 mb-1">

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { getApiUrl } from "@/lib/api";
 
 export interface SearchSourceConnector {
 	id: number;
@@ -71,7 +72,7 @@ export const useSearchSourceConnectors = (lazy: boolean = false, searchSpaceId?:
 
 				// Build URL with optional search_space_id query parameter
 				const url = new URL(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/`
+					getApiUrl('/api/v1/search-source-connectors/')
 				);
 				if (spaceId !== undefined) {
 					url.searchParams.append("search_space_id", spaceId.toString());
@@ -181,7 +182,7 @@ export const useSearchSourceConnectors = (lazy: boolean = false, searchSpaceId?:
 
 			// Add search_space_id as a query parameter
 			const url = new URL(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/`
+				getApiUrl('/api/v1/search-source-connectors/')
 			);
 			url.searchParams.append("search_space_id", spaceId.toString());
 
@@ -226,7 +227,7 @@ export const useSearchSourceConnectors = (lazy: boolean = false, searchSpaceId?:
 			}
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/${connectorId}`,
+				getApiUrl(`/api/v1/search-source-connectors/${connectorId}`),
 				{
 					method: "PUT",
 					headers: {
@@ -266,7 +267,7 @@ export const useSearchSourceConnectors = (lazy: boolean = false, searchSpaceId?:
 			}
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/search-source-connectors/${connectorId}`,
+				getApiUrl(`/api/v1/search-source-connectors/${connectorId}`),
 				{
 					method: "DELETE",
 					headers: {
@@ -317,9 +318,7 @@ export const useSearchSourceConnectors = (lazy: boolean = false, searchSpaceId?:
 			}
 
 			const response = await fetch(
-				`${
-					process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL
-				}/api/v1/search-source-connectors/${connectorId}/index?${params.toString()}`,
+				getApiUrl(`/api/v1/search-source-connectors/${connectorId}/index?${params.toString()}`),
 				{
 					method: "POST",
 					headers: {

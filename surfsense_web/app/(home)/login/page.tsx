@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { getAuthErrorDetails, shouldRetry } from "@/lib/auth-errors";
+import { fetchConfig } from '@/lib/config';
 import { AmbientBackground } from "./AmbientBackground";
 import { GoogleLoginButton } from "./GoogleLoginButton";
 import { LocalLoginForm } from "./LocalLoginForm";
@@ -79,9 +80,15 @@ function LoginContent() {
 			});
 		}
 
-		// Get the auth type from environment variables
-		setAuthType(process.env.NEXT_PUBLIC_FASTAPI_BACKEND_AUTH_TYPE || "GOOGLE");
-		setIsLoading(false);
+		// Get the auth type from runtime config
+		fetchConfig().then(config => {
+			setAuthType(config.authType);
+		}).catch(() => {
+			// Fallback to default if config fetch fails
+			setAuthType("GOOGLE");
+		}).finally(() => {
+			setIsLoading(false);
+		});
 	}, [searchParams]);
 
 	// Show loading state while determining auth type
