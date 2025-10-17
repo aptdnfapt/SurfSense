@@ -34,7 +34,7 @@ import {
 import { Spotlight } from "@/components/ui/spotlight";
 import { Tilt } from "@/components/ui/tilt";
 import { useSearchSpaces } from "@/hooks/use-search-spaces";
-import { apiClient } from "@/lib/api";
+import { apiClient, getApiUrl } from "@/lib/api";
 
 interface User {
 	id: string;
@@ -203,7 +203,7 @@ const DashboardPage = () => {
 		// Send DELETE request to the API
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/searchspaces/${id}`,
+				getApiUrl(`/api/v1/searchspaces/${id}`),
 				{
 					method: "DELETE",
 					headers: {

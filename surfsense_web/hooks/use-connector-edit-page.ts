@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { getApiUrl } from "@/lib/api";
 import {
 	type EditConnectorFormValues,
 	type EditMode,
@@ -175,7 +176,7 @@ export function useConnectorEditPage(connectorId: number, searchSpaceId: string)
 				const token = localStorage.getItem("surfsense_bearer_token");
 				if (!token) throw new Error("No auth token");
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/github/repositories/`,
+					getApiUrl('/api/v1/github/repositories/'),
 					{
 						method: "POST",
 						headers: {

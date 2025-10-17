@@ -54,6 +54,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { getApiUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 interface Chat {
@@ -140,7 +141,7 @@ export default function ChatsPageClient({ searchSpaceId }: ChatsPageClientProps)
 
 				// Fetch all chats for this search space
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/chats/?search_space_id=${searchSpaceId}`,
+					getApiUrl(`/api/v1/chats/?search_space_id=${searchSpaceId}`),
 					{
 						headers: {
 							Authorization: `Bearer ${token}`,
@@ -217,7 +218,7 @@ export default function ChatsPageClient({ searchSpaceId }: ChatsPageClientProps)
 			}
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/chats/${chatToDelete.id}`,
+				getApiUrl(`/api/v1/chats/${chatToDelete.id}`),
 				{
 					method: "DELETE",
 					headers: {
@@ -285,7 +286,7 @@ export default function ChatsPageClient({ searchSpaceId }: ChatsPageClientProps)
 			};
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/podcasts/generate/`,
+				getApiUrl('/api/v1/podcasts/generate/'),
 				{
 					method: "POST",
 					headers: {

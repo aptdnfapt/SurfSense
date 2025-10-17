@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { getApiUrl } from "@/lib/api";
 
 export interface Chunk {
 	id: number;
@@ -49,7 +50,7 @@ export function useDocumentByChunk() {
 			setDocument(null);
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents/by-chunk/${chunkId}`,
+				getApiUrl(`/api/v1/documents/by-chunk/${chunkId}`),
 				{
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
