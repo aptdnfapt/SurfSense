@@ -36,8 +36,13 @@ export async function fetchConfig(): Promise<AppConfig> {
   // Start new fetch
   configPromise = (async () => {
     try {
-      // First try to get backend URL from env (for server-side)
-      const backendUrl = process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL || 'http://localhost:8000';
+      // Determine backend URL based on environment
+      // Server-side (SSR): use Docker service name
+      // Client-side (browser): use env variable or localhost
+      const isServer = typeof window === 'undefined';
+      const backendUrl = isServer 
+        ? (process.env.BACKEND_URL || 'http://backend:8000')  // Docker internal network
+        : (process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL || 'http://localhost:8000');  // Browser accessible URL
       
       const response = await fetch(`${backendUrl}/api/v1/config`, {
         cache: 'no-store', // Always fetch fresh config
