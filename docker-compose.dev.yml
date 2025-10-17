@@ -26,6 +26,8 @@ services:
       - ./surfsense_backend:/app
       # Create volume for models (so they persist)
       - backend_models:/app/models
+      # Create volume for HuggingFace cache (for Docling models)
+      - backend_hf_cache:/root/.cache/huggingface
     depends_on:
       db:
         condition: service_healthy
@@ -71,3 +73,4 @@ volumes:
   postgres_data:
   pgadmin_data:
   backend_models:
+  backend_hf_cache:
