@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { getApiUrl } from "@/lib/api";
 import {
 	Card,
 	CardContent,
@@ -71,7 +72,7 @@ export default function YouTubeVideoAdder() {
 
 			// Make API call to backend
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents/`,
+				getApiUrl('/api/v1/documents/'),
 				{
 					method: "POST",
 					headers: {

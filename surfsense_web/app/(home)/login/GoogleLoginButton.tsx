@@ -1,29 +1,27 @@
 "use client";
 import { IconBrandGoogleFilled } from "@tabler/icons-react";
 import { motion } from "motion/react";
+import { getApiUrl } from "@/lib/api";
 import { Logo } from "@/components/Logo";
 import { AmbientBackground } from "./AmbientBackground";
 
 export function GoogleLoginButton() {
-	const handleGoogleLogin = () => {
+	const handleGoogleLogin = async () => {
 		// Redirect to Google OAuth authorization URL
-		fetch(`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/auth/google/authorize`)
-			.then((response) => {
-				if (!response.ok) {
-					throw new Error("Failed to get authorization URL");
-				}
-				return response.json();
-			})
-			.then((data) => {
-				if (data.authorization_url) {
-					window.location.href = data.authorization_url;
-				} else {
-					console.error("No authorization URL received");
-				}
-			})
-			.catch((error) => {
-				console.error("Error during Google login:", error);
-			});
+		try {
+			const response = await fetch(getApiUrl('/auth/google/authorize'));
+			if (!response.ok) {
+				throw new Error("Failed to get authorization URL");
+			}
+			const data = await response.json();
+			if (data.authorization_url) {
+				window.location.href = data.authorization_url;
+			} else {
+				console.error("No authorization URL received");
+			}
+		} catch (error) {
+			console.error("Error during Google login:", error);
+		}
 	};
 	return (
 		<div className="relative w-full overflow-hidden">

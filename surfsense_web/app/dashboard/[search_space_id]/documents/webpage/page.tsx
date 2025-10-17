@@ -1,3 +1,4 @@
+import { getApiUrl } from "@/lib/api";
 "use client";
 
 import { type Tag, TagInput } from "emblor";
@@ -62,9 +63,8 @@ export default function WebpageCrawler() {
 
 			// Make API call to backend
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents/`,
-				{
-					method: "POST",
+				getApiUrl(`/api/v1/documents/`),
+			{
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
