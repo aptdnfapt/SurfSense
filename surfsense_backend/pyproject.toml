@@ -10,6 +10,7 @@ dependencies = [
     "chonkie[all]>=1.0.6",
     "discord-py>=2.5.2",
     "docling>=2.15.0",
+    "easyocr>=1.7.0",
     "fastapi>=0.115.8",
     "fastapi-users[oauth,sqlalchemy]>=14.0.1",
     "firecrawl-py>=1.12.0",
