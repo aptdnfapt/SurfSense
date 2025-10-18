@@ -16,8 +16,9 @@ const nextConfig: NextConfig = {
 			},
 		],
 	},
-	// Enable standalone output for production Docker builds
-	output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
+	// Enable standalone output for Docker production builds
+	// Always use standalone in production Dockerfile
+	output: 'standalone',
 };
 
 // Wrap the config with createMDX
