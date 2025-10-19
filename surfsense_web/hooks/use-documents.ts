@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { normalizeListResponse } from "@/lib/pagination";
+import { getApiUrl } from "@/lib/api";
 
 export interface Document {
 	id: number;
@@ -73,7 +74,7 @@ export function useDocuments(searchSpaceId: number, options?: UseDocumentsOption
 				}
 
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents?${params.toString()}`,
+					getApiUrl(`/api/v1/documents?${params.toString()}`),
 					{
 						headers: {
 							Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -144,7 +145,7 @@ export function useDocuments(searchSpaceId: number, options?: UseDocumentsOption
 				}
 
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents/search/?${params.toString()}`,
+					getApiUrl(`/api/v1/documents/search/?${params.toString()}`),
 					{
 						headers: {
 							Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,
@@ -178,7 +179,7 @@ export function useDocuments(searchSpaceId: number, options?: UseDocumentsOption
 		async (documentId: number) => {
 			try {
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/documents/${documentId}`,
+					getApiUrl(`/api/v1/documents/${documentId}`),
 					{
 						headers: {
 							Authorization: `Bearer ${localStorage.getItem("surfsense_bearer_token")}`,

@@ -1,3 +1,4 @@
+import { getApiUrl } from "@/lib/api";
 "use client";
 
 import { ArrowLeft, Check, ExternalLink, Loader2 } from "lucide-react";
@@ -47,7 +48,7 @@ export default function AirtableConnectorPage() {
 		setIsConnecting(true);
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/auth/airtable/connector/add/?space_id=${searchSpaceId}`,
+				getApiUrl(`/api/v1/auth/airtable/connector/add/?space_id=${searchSpaceId}`),
 				{
 					method: "GET",
 					headers: {
