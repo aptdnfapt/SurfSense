@@ -88,11 +88,11 @@ echo -e "${YELLOW}Downloading configuration files...${NC}"
 
 # For now, create them locally (in production, download from GitHub)
 # curl -fsSL "$GITHUB_RAW_URL/docker-compose.install.yml" -o docker-compose.yml
-# curl -fsSL "$GITHUB_RAW_URL/.env.install.example" -o .env.example
+# curl -fsSL "$GITHUB_RAW_URL/.env.example" -o .env.example
 
 # Copy from repo (temporary for development)
 cp "$(dirname "$0")/docker-compose.install.yml" docker-compose.yml 2>/dev/null || echo "Using local files"
-cp "$(dirname "$0")/.env.install.example" .env.example 2>/dev/null || echo "Using local files"
+cp "$(dirname "$0")/.env.example" .env.example 2>/dev/null || echo "Using local files"
 
 echo -e "${GREEN}✓ Configuration files ready${NC}"
 
