@@ -1,3 +1,4 @@
+import { getApiUrl } from "@/lib/api";
 "use client";
 
 import { format } from "date-fns";
@@ -130,7 +131,7 @@ export default function PodcastsPageClient({ searchSpaceId }: PodcastsPageClient
 
 				// Fetch all podcasts for this search space
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/podcasts/`,
+					getApiUrl(`/api/v1/podcasts/`),
 					{
 						headers: {
 							Authorization: `Bearer ${token}`,
@@ -342,7 +343,7 @@ export default function PodcastsPageClient({ searchSpaceId }: PodcastsPageClient
 
 			try {
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/podcasts/${podcast.id}/stream`,
+					getApiUrl(`/api/v1/podcasts/${podcast.id}/stream`),
 					{
 						headers: {
 							Authorization: `Bearer ${token}`,
@@ -396,7 +397,7 @@ export default function PodcastsPageClient({ searchSpaceId }: PodcastsPageClient
 			}
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/podcasts/${podcastToDelete.id}`,
+				getApiUrl(`/api/v1/podcasts/${podcastToDelete.id}`),
 				{
 					method: "DELETE",
 					headers: {

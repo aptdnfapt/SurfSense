@@ -6,6 +6,7 @@ import { useEffect, useMemo } from "react";
 import type { ResearchMode } from "@/components/chat";
 import ChatInterface from "@/components/chat/ChatInterface";
 import { useChatAPI, useChatState } from "@/hooks/use-chat";
+import { getApiUrl } from "@/lib/api";
 import type { Document } from "@/hooks/use-documents";
 
 export default function ResearcherPage() {
@@ -79,7 +80,7 @@ export default function ResearcherPage() {
 	};
 
 	const handler = useChat({
-		api: `${process.env.NEXT_PUBLIC_FASTAPI_BACKEND_URL}/api/v1/chat`,
+		api: getApiUrl('/api/v1/chat'),
 		streamProtocol: "data",
 		initialMessages: [],
 		headers: {
