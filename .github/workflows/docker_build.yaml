@@ -124,7 +124,7 @@ jobs:
           git ls-remote --tags origin | grep "refs/tags/${{ steps.tag_version.outputs.next_version }}" || (echo "Tag push verification failed!" && exit 1)
           echo "Tag successfully pushed."
   
-  build_and_push_backend_image: 
+  build_and_push_backend_cpu_image: 
     runs-on: ubuntu-latest
     needs: tag_release # Depends on the tag being created successfully
     permissions:
@@ -159,10 +159,11 @@ jobs:
             # Optionally add 'latest' tag if building from the default branch
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.event.inputs.branch == github.event.repository.default_branch }}
 
-      - name: Build and push surfsense backend
+      - name: Build and push surfsense backend (CPU-only)
         uses: docker/build-push-action@v5
         with:
           context: ./surfsense_backend
+          file: ./surfsense_backend/Dockerfile.prod
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -171,7 +172,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  build_and_push_ui_image: 
+  build_and_push_backend_gpu_image: 
     runs-on: ubuntu-latest
     needs: tag_release # Depends on the tag being created successfully
     permissions:
@@ -199,17 +200,66 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/surfsense_ui
+          images: ghcr.io/${{ github.repository_owner }}/surfsense_backend
+          tags: |
+            # Use the tag generated in the previous job with -gpu suffix
+            type=raw,value=${{ needs.tag_release.outputs.new_tag }}-gpu
+            # Optionally add 'latest-gpu' tag if building from the default branch
+            type=raw,value=latest-gpu,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.event.inputs.branch == github.event.repository.default_branch }}
+
+      - name: Build and push surfsense backend (GPU)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./surfsense_backend
+          file: ./surfsense_backend/Dockerfile.prod.gpu
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          # Optional: Add build cache for faster builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build_and_push_frontend_image: 
+    runs-on: ubuntu-latest
+    needs: tag_release # Depends on the tag being created successfully
+    permissions:
+      packages: write # Need permission to write to GHCR
+      contents: read # Need permission to read repo contents (checkout)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract metadata (tags, labels) for Docker build
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/surfsense_frontend
           tags: |
             # Use the tag generated in the previous job
             type=raw,value=${{ needs.tag_release.outputs.new_tag }}
             # Optionally add 'latest' tag if building from the default branch
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.event.inputs.branch == github.event.repository.default_branch }}
 
-      - name: Build and push surfsense UI image
+      - name: Build and push surfsense frontend image (production)
         uses: docker/build-push-action@v5
         with:
           context: ./surfsense_web
+          file: ./surfsense_web/Dockerfile.prod
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
