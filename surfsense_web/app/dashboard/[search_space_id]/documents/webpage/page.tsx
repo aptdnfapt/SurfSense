@@ -1,5 +1,6 @@
-import { getApiUrl } from "@/lib/api";
 "use client";
+
+import { getApiUrl } from "@/lib/api";
 
 import { type Tag, TagInput } from "emblor";
 import { Globe, Loader2 } from "lucide-react";
