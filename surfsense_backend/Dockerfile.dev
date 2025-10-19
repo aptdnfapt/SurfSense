@@ -26,9 +26,14 @@ RUN pip install --upgrade certifi pip-system-certs
 # Copy requirements
 COPY pyproject.toml uv.lock ./
 
-# Install Python dependencies
+# Install CPU-only PyTorch FIRST (before other dependencies)
+# This prevents other packages from pulling in the GPU version
 RUN pip install --no-cache-dir uv && \
-    uv pip install --system --no-cache-dir -e .
+    uv pip install --system --no-cache-dir \
+    torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+# Now install the rest of dependencies
+RUN uv pip install --system --no-cache-dir -e .
 
 # Set SSL environment variables
 ENV SSL_CERT_FILE=/usr/local/lib/python3.12/site-packages/certifi/cacert.pem
