@@ -84,14 +84,15 @@ export default async function RootLayout({
 }>) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<body className={cn(roboto.className, "bg-white dark:bg-black antialiased h-full w-full")}>
+			<body className={cn(roboto.className, "bg-white dark:bg-black antialiased h-full w-full")} suppressHydrationWarning>
 				<ThemeProvider
 					attribute="class"
 					enableSystem
 					disableTransitionOnChange
 					defaultTheme="light"
+					suppressHydrationWarning
 				>
-					<RootProvider>
+					<RootProvider suppressHydrationWarning>
 						{children}
 						<Toaster />
 					</RootProvider>
