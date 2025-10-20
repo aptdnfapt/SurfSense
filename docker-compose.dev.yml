@@ -15,6 +15,14 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
   backend:
     build:
       context: ./surfsense_backend
@@ -28,15 +36,49 @@ services:
       - backend_models:/app/models
       # Create volume for HuggingFace cache (for Docling models)
       - backend_hf_cache:/root/.cache/huggingface
+      # Shared temp directory
+      - shared_temp:/tmp
     depends_on:
       db:
         condition: service_healthy
+      - redis
     env_file:
       - ./surfsense_backend/.env
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
+      - CELERY_BROKER_URL=redis://redis:${REDIS_PORT:-6379}/0
+      - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT:-6379}/0
       - PYTHONPATH=/app
       - UVICORN_LOOP=asyncio
+      - UNSTRUCTURED_HAS_PATCHED_LOOP=1
+      - LANGCHAIN_TRACING_V2=false
+      - LANGSMITH_TRACING=false
+
+  celery_worker:
+    build:
+      context: ./surfsense_backend
+      dockerfile: Dockerfile.dev
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=1 --pool=solo
+    volumes:
+      # Mount source code for hot reload
+      - ./surfsense_backend:/app
+      # Create volume for models (so they persist)
+      - backend_models:/app/models
+      # Create volume for HuggingFace cache (for Docling models)
+      - backend_hf_cache:/root/.cache/huggingface
+      # Shared temp directory
+      - shared_temp:/tmp
+    depends_on:
+      - db
+      - redis
+      - backend
+    env_file:
+      - ./surfsense_backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
+      - CELERY_BROKER_URL=redis://redis:${REDIS_PORT:-6379}/0
+      - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT:-6379}/0
+      - PYTHONPATH=/app
 
   frontend:
     build:
@@ -56,7 +98,7 @@ services:
       - ./surfsense_web/.env
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_FASTAPI_BACKEND_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
 
   pgadmin:
     image: dpage/pgadmin4

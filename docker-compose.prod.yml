@@ -16,6 +16,15 @@ services:
       retries: 5
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
   backend:
     build:
       context: ./surfsense_backend
@@ -26,16 +35,48 @@ services:
       # Only mount model volumes (no source code mounting)
       - backend_models:/app/models
       - backend_hf_cache:/root/.cache/huggingface
+      # Shared temp directory
+      - shared_temp:/tmp
     depends_on:
       db:
         condition: service_healthy
+      - redis
     env_file:
       - ./surfsense_backend/.env
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
+      - CELERY_BROKER_URL=redis://redis:${REDIS_PORT:-6379}/0
+      - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT:-6379}/0
       - PYTHONPATH=/app
       - UVICORN_LOOP=asyncio
+      - UNSTRUCTURED_HAS_PATCHED_LOOP=1
+      - LANGCHAIN_TRACING_V2=false
+      - LANGSMITH_TRACING=false
       - MODEL_PATH=/app/models
+    restart: unless-stopped
+
+  celery_worker:
+    build:
+      context: ./surfsense_backend
+      dockerfile: Dockerfile.prod
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=1 --pool=solo
+    volumes:
+      # Only mount model volumes (no source code mounting)
+      - backend_models:/app/models
+      - backend_hf_cache:/root/.cache/huggingface
+      # Shared temp directory
+      - shared_temp:/tmp
+    depends_on:
+      - db
+      - redis
+      - backend
+    env_file:
+      - ./surfsense_backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-surfsense}
+      - CELERY_BROKER_URL=redis://redis:${REDIS_PORT:-6379}/0
+      - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT:-6379}/0
+      - PYTHONPATH=/app
     restart: unless-stopped
 
   frontend:
@@ -52,7 +93,7 @@ services:
       - ./surfsense_web/.env
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_FASTAPI_BACKEND_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8000}
     restart: unless-stopped
 
   pgadmin:
@@ -73,3 +114,5 @@ volumes:
   pgadmin_data:
   backend_models:
   backend_hf_cache:
+  redis_data:
+  shared_temp:
